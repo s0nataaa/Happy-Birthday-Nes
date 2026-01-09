@@ -79,7 +79,6 @@ const currentCover = document.getElementById('current-cover');
 
 // track current file to avoid string-matching issues and improve toggling
 audio.dataset.current = audio.dataset.current || '';
-audio.preload = audio.preload || 'metadata';
 
 audio.addEventListener('playing', () => vinylWrapper.classList.add('playing'));
 audio.addEventListener('pause', () => vinylWrapper.classList.remove('playing'));
