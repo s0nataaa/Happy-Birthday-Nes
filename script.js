@@ -84,25 +84,62 @@ audio.preload = audio.preload || 'metadata';
 audio.addEventListener('playing', () => vinylWrapper.classList.add('playing'));
 audio.addEventListener('pause', () => vinylWrapper.classList.remove('playing'));
 
-// Autoplay song2 on page load (attempt). If browser blocks autoplay this will fail silently.
+// Create and show fullscreen overlay on page load
 window.addEventListener('load', () => {
-    const autoFile = 'music/song2.mp3';
-    const autoCover = 'song2.jpg';
-    const autoItem = document.querySelector('.song-item[data-bg="song2.jpg"]');
-    if (!autoItem) return;
+    const overlay = document.createElement('div');
+    overlay.id = 'music-overlay';
+    overlay.style.position = 'fixed';
+    overlay.style.top = '0';
+    overlay.style.left = '0';
+    overlay.style.right = '0';
+    overlay.style.bottom = '0';
+    overlay.style.background = 'rgba(0, 0, 0, 0.5)';
+    overlay.style.display = 'flex';
+    overlay.style.alignItems = 'center';
+    overlay.style.justifyContent = 'center';
+    overlay.style.zIndex = '99999';
 
-    // mark active visually
-    document.querySelectorAll('.song-item').forEach(i => i.classList.remove('active'));
-    autoItem.classList.add('active');
+    const button = document.createElement('button');
+    button.textContent = 'Enable Music 🎵';
+    button.style.padding = '16px 32px';
+    button.style.fontSize = '20px';
+    button.style.fontWeight = '600';
+    button.style.borderRadius = '10px';
+    button.style.border = 'none';
+    button.style.background = '#F90C88';
+    button.style.color = 'white';
+    button.style.cursor = 'pointer';
+    button.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.3)';
 
-    audio.dataset.current = autoFile;
-    audio.src = autoFile;
-    if (currentCover) currentCover.src = autoCover;
-    audio.load();
-    audio.play().catch(() => {
-        // autoplay blocked by browser — show a small prompt so user can enable audio
-        showPlayPrompt(autoFile, autoCover, autoItem);
+    button.addEventListener('click', () => {
+        // Set up audio directly on user interaction
+        const autoFile = 'music/song2.mp3';
+        const autoCover = 'song2.jpg';
+        const autoItem = document.querySelector('.song-item[data-bg="song2.jpg"]');
+
+        // Set audio properties
+        audio.loop = true;
+        audio.volume = 0.6;
+        audio.dataset.current = autoFile;
+        audio.src = autoFile;
+        if (currentCover) currentCover.src = autoCover;
+
+        // Mark song2 as active
+        if (autoItem) {
+            document.querySelectorAll('.song-item').forEach(i => i.classList.remove('active'));
+            autoItem.classList.add('active');
+        }
+
+        // Load and play directly (no async, no setTimeout)
+        audio.load();
+        audio.play();
+
+        // Remove overlay
+        overlay.remove();
     });
+
+    overlay.appendChild(button);
+    document.body.appendChild(overlay);
 });
 
 function playSong(file, element, coverUrl) {
@@ -111,7 +148,7 @@ function playSong(file, element, coverUrl) {
     // Jika lagu yang sama diklik lagi, pause/play
     if (audio.dataset.current === file) {
         if (audio.paused) {
-            audio.play().catch(() => {});
+            audio.play();
         } else {
             audio.pause();
         }
@@ -125,63 +162,8 @@ function playSong(file, element, coverUrl) {
     audio.dataset.current = file;
     audio.src = file;
     if (currentCover) currentCover.src = coverUrl;
-    // Ensure browser begins loading right away and attempt to play
     audio.load();
-    audio.play().catch(() => {
-        // play may fail if browser blocks — show prompt to let user start playback
-        showPlayPrompt(file, coverUrl, element);
-    });
-}
-
-function showPlayPrompt(file, coverUrl, element) {
-    // avoid duplicate prompt
-    if (document.getElementById('audio-unblock')) return;
-
-    const overlay = document.createElement('div');
-    overlay.id = 'audio-unblock';
-    overlay.style.position = 'fixed';
-    overlay.style.left = '0';
-    overlay.style.top = '0';
-    overlay.style.right = '0';
-    overlay.style.bottom = '0';
-    overlay.style.display = 'flex';
-    overlay.style.alignItems = 'center';
-    overlay.style.justifyContent = 'center';
-    overlay.style.background = 'rgba(0,0,0,0.35)';
-    overlay.style.zIndex = '9999';
-
-    const btn = document.createElement('button');
-    btn.textContent = 'Click to enable audio';
-    btn.style.padding = '14px 22px';
-    btn.style.fontSize = '16px';
-    btn.style.borderRadius = '8px';
-    btn.style.border = 'none';
-    btn.style.cursor = 'pointer';
-    btn.style.background = '#F90C88';
-    btn.style.color = 'white';
-
-    btn.addEventListener('click', () => {
-        // try to play the requested file
-        if (file) {
-            audio.dataset.current = file;
-            audio.src = file;
-        }
-        if (coverUrl && currentCover) currentCover.src = coverUrl;
-        audio.load();
-        audio.play().then(() => {
-            // success
-            overlay.remove();
-            if (element) {
-                document.querySelectorAll('.song-item').forEach(i => i.classList.remove('active'));
-                element.classList.add('active');
-            }
-        }).catch(() => {
-            // still blocked or failed — keep the prompt so user can try again
-        });
-    });
-
-    overlay.appendChild(btn);
-    document.body.appendChild(overlay);
+    audio.play();
 }
 
 // Tambahan: Kalau lagu habis, animasi berhenti
