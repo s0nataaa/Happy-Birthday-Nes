@@ -170,11 +170,12 @@ window.addEventListener('load', () => {
  */
 function safePlay() {
     if (!audioUnlocked) {
-        console.warn('Audio not yet unlocked by user interaction');
+        console.warn('⚠️ Audio not yet unlocked by user interaction. Click "Enable Music" first.');
         return null;
     }
+    console.log(`▶️ Attempting to play: ${audio.dataset.currentId}`);
     return audio.play().catch(err => {
-        console.error('Failed to play audio:', err);
+        console.error('❌ Failed to play audio:', err);
     });
 }
 
@@ -225,6 +226,7 @@ function playSongById(songId, element) {
  * Used in HTML: onclick="playSongByElement('song1', this)"
  */
 function playSongByElement(songId, element) {
+    console.log(`🎵 Song click detected: ${songId}, audioUnlocked: ${audioUnlocked}`);
     playSongById(songId, element);
 }
 
@@ -232,3 +234,9 @@ function playSongByElement(songId, element) {
 audio.onended = () => {
     vinylWrapper.classList.remove('playing');
 };
+
+// Debug info
+console.log('✅ Audio player script loaded');
+console.log(`📋 Playlist items: ${PLAYLIST.length}`);
+console.log(`🔊 Audio element found: ${!!audio}`);
+console.log(`🎨 Vinyl wrapper found: ${!!vinylWrapper}`);
