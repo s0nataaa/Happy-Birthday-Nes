@@ -47,6 +47,7 @@
                 <p class="title">KULIAH</p>
                 <p class="desc">Setelah akhirnya melewati fase neraka, kamu memulai lembaran baru di Universitas Brawijaya sebagai mahasiswa Agroekoteknologi. Kamu mulai hidup mandiri dengan tinggal jauh dari rumah, belajar adaptasi pada kehidupan yang baru, dan sering dapat tugas laprak lmao. Not your dream Univ, not your dream major, but surely it will give you a valuable lesson</p>
             </div>
+            </div>
         </div>
 
     </section>
@@ -67,21 +68,21 @@
         <div class="song-container">
             <h2>FAVORITE SONGS</h2>
             <div class="player-card">
-                <div class="song-item" data-bg="song1.jpg" onclick="playSong('music/song1.mp3', this, 'song1.jpg')">
+                <div class="song-item" data-bg="song1.jpg" onclick="playSongByElement('song1', this)">
                     <p class="song-title">I Just Couldn't Save You Tonight</p>
                     <p class="song-artist">Ardhito Pramono</p>
                 </div>
-                <div class="song-item" data-bg="song2.jpg" onclick="playSong('music/song2.mp3', this, 'song2.jpg')">
+                <div class="song-item" data-bg="song2.jpg" onclick="playSongByElement('song2', this)">
                     <p class="song-title">the way things go</p>
                     <p class="song-artist">beabadoobee</p>
                 </div>
-                <div class="song-item" data-bg="song3.jpg" onclick="playSong('music/song3.mp3', this, 'song3.jpg')">
+                <div class="song-item" data-bg="song3.jpg" onclick="playSongByElement('song3', this)">
                     <p class="song-title">Glue Song</p>
                     <p class="song-artist">beabadoobee</p>
                 </div>
             </div>
         </div>
-        <audio id="main-audio" preload="metadata"></audio>
+        <audio id="main-audio"></audio>
     </section>
     <section class="footer">
         <h2>Oh, I guess that's just the way things go <br>@radvxz</h2>
@@ -90,5 +91,4 @@
 
     <script src="script.js"></script>
 </body>
-
 </html>
