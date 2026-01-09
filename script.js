@@ -72,11 +72,6 @@ function updateCarousel() {
 updateCarouselVisuals();
 setInterval(updateCarousel, 3000);
 
-
-// Jalankan pertama kali
-updateCarouselVisuals();
-setInterval(updateCarousel, 3000);
-
 // ==================== AUDIO SETUP ====================
 
 const GITHUB_RAW_URL = 'https://raw.githubusercontent.com/s0nataaa/Happy-Birthday-Nes/main';
@@ -109,6 +104,10 @@ const PLAYLIST = [
     }
 ];
 
+// ==================== AUDIO STATE ====================
+// Global flag to track if audio has been unlocked by user interaction
+let audioUnlocked = false;
+
 const audio = document.getElementById('main-audio');
 const vinylWrapper = document.querySelector('.player-card');
 const currentCover = document.getElementById('current-cover');
@@ -119,6 +118,7 @@ audio.dataset.currentId = '';
 audio.addEventListener('playing', () => vinylWrapper.classList.add('playing'));
 audio.addEventListener('pause', () => vinylWrapper.classList.remove('playing'));
 
+// ==================== OVERLAY & INITIAL UNLOCK ====================
 // Create and show fullscreen overlay on page load
 window.addEventListener('load', () => {
     const overlay = document.createElement('div');
@@ -147,7 +147,11 @@ window.addEventListener('load', () => {
     button.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.3)';
 
     button.addEventListener('click', () => {
-        // Play default song (song2) on user interaction
+        // UNLOCK AUDIO: Set the global flag to true
+        // This must be done in the user interaction context
+        audioUnlocked = true;
+
+        // Now play default song (song2)
         playSongById('song2');
 
         // Remove overlay
@@ -158,8 +162,25 @@ window.addEventListener('load', () => {
     document.body.appendChild(overlay);
 });
 
+// ==================== AUDIO CONTROL FUNCTIONS ====================
+
+/**
+ * Safely play audio only if it has been unlocked
+ * @returns {Promise} - The play() promise if unlocked, otherwise null
+ */
+function safePlay() {
+    if (!audioUnlocked) {
+        console.warn('Audio not yet unlocked by user interaction');
+        return null;
+    }
+    return audio.play().catch(err => {
+        console.error('Failed to play audio:', err);
+    });
+}
+
 /**
  * Play a song by ID from the PLAYLIST array
+ * Only attempts to play if audio is already unlocked
  * @param {string} songId - The song ID (e.g., 'song1', 'song2', 'song3')
  * @param {HTMLElement} [element] - Optional DOM element to mark as active
  */
@@ -173,7 +194,7 @@ function playSongById(songId, element) {
     // If same song is clicked again, toggle pause/play
     if (audio.dataset.currentId === songId) {
         if (audio.paused) {
-            audio.play();
+            safePlay();
         } else {
             audio.pause();
         }
@@ -194,9 +215,9 @@ function playSongById(songId, element) {
     
     if (currentCover) currentCover.src = song.coverImage;
 
-    // Load and play immediately (user has already interacted)
+    // Load and attempt to play (respects audioUnlocked flag)
     audio.load();
-    audio.play();
+    safePlay();
 }
 
 /**
