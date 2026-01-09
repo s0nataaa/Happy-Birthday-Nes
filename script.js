@@ -230,6 +230,30 @@ function playSongByElement(songId, element) {
     playSongById(songId, element);
 }
 
+/**
+ * BACKWARD COMPATIBILITY: Legacy function name
+ * If HTML uses old format: onclick="playSong('music/song1.mp3', this, 'song1.jpg')"
+ * This will map it to the new playSongById() system
+ */
+function playSong(url, element, coverUrl) {
+    // Find song by URL or assume legacy format
+    if (url.includes('song1')) {
+        playSongByElement('song1', element);
+    } else if (url.includes('song2')) {
+        playSongByElement('song2', element);
+    } else if (url.includes('song3')) {
+        playSongByElement('song3', element);
+    } else {
+        console.warn(`❌ Could not identify song from URL: ${url}`);
+    }
+}
+
+// Expose all functions to global window object (for HTML onclick)
+window.playSongByElement = playSongByElement;
+window.playSong = playSong;
+window.safePlay = safePlay;
+window.playSongById = playSongById;
+
 // Handle end of song
 audio.onended = () => {
     vinylWrapper.classList.remove('playing');
