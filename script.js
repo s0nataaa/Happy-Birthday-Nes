@@ -73,12 +73,48 @@ updateCarouselVisuals();
 setInterval(updateCarousel, 3000);
 
 
+// Jalankan pertama kali
+updateCarouselVisuals();
+setInterval(updateCarousel, 3000);
+
+// ==================== AUDIO SETUP ====================
+
+const GITHUB_RAW_URL = 'https://raw.githubusercontent.com/s0nataaa/Happy-Birthday-Nes/main';
+
+// Playlist configuration
+const PLAYLIST = [
+    {
+        id: 'song1',
+        title: 'I Just Couldn\'t Save You Tonight',
+        artist: 'Ardhito Pramono',
+        audioFile: `${GITHUB_RAW_URL}/music/song1.mp3`,
+        coverImage: `${GITHUB_RAW_URL}/song1.jpg`,
+        dataAttr: 'song1.jpg'
+    },
+    {
+        id: 'song2',
+        title: 'the way things go',
+        artist: 'beabadoobee',
+        audioFile: `${GITHUB_RAW_URL}/music/song2.mp3`,
+        coverImage: `${GITHUB_RAW_URL}/song2.jpg`,
+        dataAttr: 'song2.jpg'
+    },
+    {
+        id: 'song3',
+        title: 'Glue Song',
+        artist: 'beabadoobee',
+        audioFile: `${GITHUB_RAW_URL}/music/song3.mp3`,
+        coverImage: `${GITHUB_RAW_URL}/song3.jpg`,
+        dataAttr: 'song3.jpg'
+    }
+];
+
 const audio = document.getElementById('main-audio');
 const vinylWrapper = document.querySelector('.player-card');
 const currentCover = document.getElementById('current-cover');
 
-// track current file to avoid string-matching issues and improve toggling
-audio.dataset.current = audio.dataset.current || '';
+// Track current song
+audio.dataset.currentId = '';
 
 audio.addEventListener('playing', () => vinylWrapper.classList.add('playing'));
 audio.addEventListener('pause', () => vinylWrapper.classList.remove('playing'));
@@ -111,27 +147,8 @@ window.addEventListener('load', () => {
     button.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.3)';
 
     button.addEventListener('click', () => {
-        // Set up audio directly on user interaction
-        const autoFile = 'music/song2.mp3';
-        const autoCover = 'song2.jpg';
-        const autoItem = document.querySelector('.song-item[data-bg="song2.jpg"]');
-
-        // Set audio properties
-        audio.loop = true;
-        audio.volume = 0.6;
-        audio.dataset.current = autoFile;
-        audio.src = autoFile;
-        if (currentCover) currentCover.src = autoCover;
-
-        // Mark song2 as active
-        if (autoItem) {
-            document.querySelectorAll('.song-item').forEach(i => i.classList.remove('active'));
-            autoItem.classList.add('active');
-        }
-
-        // Load and play directly (no async, no setTimeout)
-        audio.load();
-        audio.play();
+        // Play default song (song2) on user interaction
+        playSongById('song2');
 
         // Remove overlay
         overlay.remove();
@@ -141,11 +158,20 @@ window.addEventListener('load', () => {
     document.body.appendChild(overlay);
 });
 
-function playSong(file, element, coverUrl) {
-    const items = document.querySelectorAll('.song-item');
-    
-    // Jika lagu yang sama diklik lagi, pause/play
-    if (audio.dataset.current === file) {
+/**
+ * Play a song by ID from the PLAYLIST array
+ * @param {string} songId - The song ID (e.g., 'song1', 'song2', 'song3')
+ * @param {HTMLElement} [element] - Optional DOM element to mark as active
+ */
+function playSongById(songId, element) {
+    const song = PLAYLIST.find(s => s.id === songId);
+    if (!song) {
+        console.warn(`Song with ID "${songId}" not found in playlist`);
+        return;
+    }
+
+    // If same song is clicked again, toggle pause/play
+    if (audio.dataset.currentId === songId) {
         if (audio.paused) {
             audio.play();
         } else {
@@ -154,18 +180,34 @@ function playSong(file, element, coverUrl) {
         return;
     }
 
-    // Ganti lagu baru
-    items.forEach(item => item.classList.remove('active'));
-    element.classList.add('active');
+    // Mark element as active if provided
+    if (element) {
+        document.querySelectorAll('.song-item').forEach(item => item.classList.remove('active'));
+        element.classList.add('active');
+    }
 
-    audio.dataset.current = file;
-    audio.src = file;
-    if (currentCover) currentCover.src = coverUrl;
+    // Update audio source and properties
+    audio.dataset.currentId = songId;
+    audio.src = song.audioFile;
+    audio.loop = true;
+    audio.volume = 0.6;
+    
+    if (currentCover) currentCover.src = song.coverImage;
+
+    // Load and play immediately (user has already interacted)
     audio.load();
     audio.play();
 }
 
-// Tambahan: Kalau lagu habis, animasi berhenti
+/**
+ * Wrapper function for HTML onclick (passes 'this' as the element)
+ * Used in HTML: onclick="playSongByElement('song1', this)"
+ */
+function playSongByElement(songId, element) {
+    playSongById(songId, element);
+}
+
+// Handle end of song
 audio.onended = () => {
     vinylWrapper.classList.remove('playing');
 };
